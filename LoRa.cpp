@@ -82,7 +82,7 @@
 LoRaClass::LoRaClass(/* args */) : _frequency(0),
                                    _packetIndex(0),
                                    _implicitHeaderMode(0),
-                                   _onReceive(NULL),
+                                   //  _onReceive(NULL),
                                    _onTxDone(NULL)
 {
 }
@@ -376,10 +376,12 @@ void LoRaClass::read_register(uint8_t reg, uint8_t *buf, uint16_t len)
   reg = ((reg << 1) >> 1); // make msb bit 0 with l,r bit shifting, as to read. "reg |= 0x7f" is equivalent to this line
   cs_select();
   spi_write_blocking(SPI_PORT, &reg, 1);
-  sleep_ms(10);
+  // sleep_ms(10);
+  asm volatile("nop \n nop \n nop");
   spi_read_blocking(SPI_PORT, 0, buf, len);
   cs_deselect();
-  sleep_ms(10);
+  // sleep_ms(10);
+  asm volatile("nop \n nop \n nop");
 }
 
 void LoRaClass::write_register(uint8_t reg, uint8_t data)
@@ -390,27 +392,31 @@ void LoRaClass::write_register(uint8_t reg, uint8_t data)
   cs_select();
   spi_write_blocking(SPI_PORT, buf, 2);
   cs_deselect();
-  sleep_ms(1);
+  // sleep_ms(1);
+  asm volatile("nop \n nop \n nop");
 }
 
-void LoRaClass::onReceive(void (*callback)(int))
+/*
+  Callback must be set before enabling interrupt
+*/
+void LoRaClass::enableInterruptOnReceive()
 {
-  _onReceive = callback;
+  // _onReceive = callback;
+  interruptOnReceive = true;
+  // if (callback)
+  // {
+  gpio_set_function(LORA_DIO0_PIN, GPIO_FUNC_SIO);
+  gpio_set_dir(LORA_DIO0_PIN, GPIO_IN);
+  gpio_set_irq_enabled(LORA_DIO0_PIN, GPIO_IRQ_EDGE_RISE, true);
 
-  if (callback)
-  {
-    gpio_set_function(LORA_DIO0_PIN, GPIO_FUNC_SIO);
-    gpio_set_dir(LORA_DIO0_PIN, GPIO_IN);
-    gpio_set_irq_enabled(LORA_DIO0_PIN, GPIO_IRQ_EDGE_RISE, true);
+  // gpio_set_irq_enabled_with_callback(LORA_DIO0_PIN, GPIO_IRQ_EDGE_RISE, true, LoRaClass::onDio0Rise);
 
-    // gpio_set_irq_enabled_with_callback(LORA_DIO0_PIN, GPIO_IRQ_EDGE_RISE, true, LoRaClass::onDio0Rise);
-
-    // attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
-  }
-  else
-  {
-    // detachInterrupt(digitalPinToInterrupt(_dio0));
-  }
+  // attachInterrupt(digitalPinToInterrupt(_dio0), LoRaClass::onDio0Rise, RISING);
+  // }
+  // else
+  // {
+  //   // detachInterrupt(digitalPinToInterrupt(_dio0));
+  // }
 }
 
 // void LoRaClass::onTxDone(void (*callback)())
@@ -805,10 +811,10 @@ void LoRaClass::handleDio0Rise()
       read_register(REG_FIFO_RX_CURRENT_ADDR, &RegFifoRxCurrentAddr, 1);
       write_register(REG_FIFO_ADDR_PTR, RegFifoRxCurrentAddr);
 
-      if (_onReceive)
-      {
-        _onReceive(packetLength);
-      }
+      // if (_onReceive)
+      // {
+      //   _onReceive(packetLength);
+      // }
     }
     else if ((irqFlags & IRQ_TX_DONE_MASK) != 0)
     {

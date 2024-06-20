@@ -28,7 +28,8 @@ public:
 
   int rssi();
 
-  void onReceive(void (*callback)(int));
+  // void onReceive(void (*callback)(int));
+  void enableInterruptOnReceive();
   void onTxDone(void (*callback)());
   void receive(int size = 0);
 
@@ -57,11 +58,13 @@ public:
   uint8_t getRegValue(uint8_t reg);
   void setFifoAddrPtr(uint8_t value);
 
+  void handleDio0Rise();
+
 private:
   void explicitHeaderMode();
   void implicitHeaderMode();
 
-  void handleDio0Rise();
+  // void handleDio0Rise();
   bool isTransmitting();
 
   int getSpreadingFactor();
@@ -80,8 +83,10 @@ private:
   long _frequency;
   int _packetIndex;
   int _implicitHeaderMode;
-  void (*_onReceive)(int);
+  // void (*_onReceive)(int);
   void (*_onTxDone)();
+
+  bool interruptOnReceive = false;
 
   static void cs_select();
   static void cs_deselect();
