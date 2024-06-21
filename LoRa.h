@@ -9,11 +9,11 @@
 #define PA_OUTPUT_RFO_PIN 0
 #define PA_OUTPUT_PA_BOOST_PIN 1
 
-class LoRaClass
+class LoRa
 {
 public:
-  LoRaClass();
-  ~LoRaClass();
+  LoRa(spi_inst *spi_bus, uint16_t cs_pin, uint8_t rst_pin, uint8_t dio0_pin);
+  ~LoRa();
 
   int begin(long frequency);
   void end();
@@ -28,8 +28,10 @@ public:
 
   int rssi();
 
-  // void onReceive(void (*callback)(int));
-  void enableInterruptOnReceive();
+  virtual uint8_t available();
+  virtual uint8_t read();
+
+  void onReceive(void (*callback)(int));
   void onTxDone(void (*callback)());
   void receive(int size = 0);
 
@@ -72,22 +74,21 @@ private:
 
   void setLdoFlag();
 
-  static inline void read_register(uint8_t reg, uint8_t *buf, uint16_t len);
-  static inline void write_register(uint8_t reg, uint8_t data);
+  inline void read_register(uint8_t reg, uint8_t *buf, uint16_t len);
+  inline void write_register(uint8_t reg, uint8_t data);
 
   static void onDio0Rise();
 
-  int _ss;
-  int _reset;
-  int _dio0;
-  long _frequency;
-  int _packetIndex;
-  int _implicitHeaderMode;
-  // void (*_onReceive)(int);
-  void (*_onTxDone)();
+  spi_inst *m_spi_bus;
+  uint8_t m_cs_pin;
+  uint8_t m_rst_pin;
+  uint8_t m_dio0_pin;
+  long m_frequency;
+  int m_packetIndex;
+  int m_implicitHeaderMode;
+  void (*m_onReceive)(int);
+  void (*m_onTxDone)();
 
-  bool interruptOnReceive = false;
-
-  static void cs_select();
-  static void cs_deselect();
+  void cs_select();
+  void cs_deselect();
 };
