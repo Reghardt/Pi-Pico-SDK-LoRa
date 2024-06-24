@@ -22,8 +22,8 @@ public:
   int endPacket(bool async = false);
 
   uint8_t parsePacket(int size = 0);
-  uint8_t packetRssi();
-  float packetSnr();
+  int8_t packetRssi();
+  int8_t packetSnr();
   long packetFrequencyError();
 
   int rssi();

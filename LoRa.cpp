@@ -309,18 +309,19 @@ uint8_t LoRa::parsePacket(int size)
   return packetLength;
 }
 
-uint8_t LoRa::packetRssi()
+int8_t LoRa::packetRssi()
 {
   uint8_t RegPktRssiValue;
   read_register(REG_PKT_RSSI_VALUE, &RegPktRssiValue, 1);
-  return (RegPktRssiValue - (m_frequency < RF_MID_BAND_THRESHOLD ? RSSI_OFFSET_LF_PORT : RSSI_OFFSET_HF_PORT));
+  // return (RegPktRssiValue - (m_frequency < RF_MID_BAND_THRESHOLD ? RSSI_OFFSET_LF_PORT : RSSI_OFFSET_HF_PORT));
+  return ((int8_t)RegPktRssiValue - (int8_t)(m_frequency < RF_MID_BAND_THRESHOLD ? RSSI_OFFSET_LF_PORT : RSSI_OFFSET_HF_PORT));
 }
 
-float LoRa::packetSnr()
+int8_t LoRa::packetSnr()
 {
   uint8_t RegPktSnrValue;
   read_register(REG_PKT_SNR_VALUE, &RegPktSnrValue, 1);
-  return (RegPktSnrValue * 0.25);
+  return (int8_t)(RegPktSnrValue * 0.25);
 }
 
 long LoRa::packetFrequencyError()
